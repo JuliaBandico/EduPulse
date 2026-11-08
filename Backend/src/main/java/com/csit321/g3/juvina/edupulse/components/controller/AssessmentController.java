@@ -1,7 +1,8 @@
-package com.csit321.g3.juvina.edupulse.controller;
+package com.csit321.g3.juvina.edupulse.components.controller;
 
-import com.csit321.g3.juvina.edupulse.dto.AssessmentDto;
-import com.csit321.g3.juvina.edupulse.service.AssessmentService;
+import com.csit321.g3.juvina.edupulse.components.dto.AssessmentDto;
+import com.csit321.g3.juvina.edupulse.components.service.AssessmentService;
+
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -83,5 +84,21 @@ public class AssessmentController {
 
         Page<AssessmentDto> assessments = assessmentService.getAssessmentsByClassPaginated(classId, pageable);
         return ResponseEntity.ok(assessments);
+    }
+
+    // UPDATE - Update an existing assessment
+    @PutMapping("/{id}")
+    public ResponseEntity<AssessmentDto> updateAssessment(@PathVariable UUID id, @Valid @RequestBody AssessmentDto dto) {
+        return assessmentService.updateAssessment(id, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DELETE - Delete an assessment
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAssessment(@PathVariable UUID id) {
+        return assessmentService.deleteAssessment(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

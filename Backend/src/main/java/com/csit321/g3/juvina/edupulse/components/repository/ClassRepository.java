@@ -1,11 +1,12 @@
-package com.csit321.g3.juvina.edupulse.repository;
+package com.csit321.g3.juvina.edupulse.components.repository;
 
-import com.csit321.g3.juvina.edupulse.entity.ClassEntity;
-import com.csit321.g3.juvina.edupulse.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.csit321.g3.juvina.edupulse.components.entity.ClassEntity;
+import com.csit321.g3.juvina.edupulse.components.entity.User;
 
 import java.util.List;
 import java.util.Optional;

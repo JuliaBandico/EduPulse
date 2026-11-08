@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.entity;
+package com.csit321.g3.juvina.edupulse.components.entity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

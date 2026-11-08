@@ -1,7 +1,8 @@
-package com.csit321.g3.juvina.edupulse.controller;
+package com.csit321.g3.juvina.edupulse.components.controller;
 
-import com.csit321.g3.juvina.edupulse.dto.ClassDto;
-import com.csit321.g3.juvina.edupulse.service.ClassService;
+import com.csit321.g3.juvina.edupulse.components.dto.ClassDto;
+import com.csit321.g3.juvina.edupulse.components.service.ClassService;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,21 @@ public class ClassController {
         return classService.getClassByIdAndTeacher(id, teacherId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // UPDATE - Update an existing class
+    @PutMapping("/{id}")
+    public ResponseEntity<ClassDto> updateClass(@PathVariable UUID id, @Valid @RequestBody ClassDto classDto) {
+        return classService.updateClass(id, classDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DELETE - Delete a class
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteClass(@PathVariable UUID id) {
+        return classService.deleteClass(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

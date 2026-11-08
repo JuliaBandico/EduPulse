@@ -1,7 +1,8 @@
-package com.csit321.g3.juvina.edupulse.controller;
+package com.csit321.g3.juvina.edupulse.components.controller;
 
-import com.csit321.g3.juvina.edupulse.dto.GradeCategoryDto;
-import com.csit321.g3.juvina.edupulse.service.GradeCategoryService;
+import com.csit321.g3.juvina.edupulse.components.dto.GradeCategoryDto;
+import com.csit321.g3.juvina.edupulse.components.service.GradeCategoryService;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,5 +57,23 @@ public class GradeCategoryController {
     public ResponseEntity<BigDecimal> getTotalWeightByClass(@PathVariable UUID classId) {
         BigDecimal total = gradeCategoryService.getTotalWeightByClass(classId);
         return ResponseEntity.ok(total);
+    }
+
+    // UPDATE - Update an existing grade category
+    @PutMapping("/{id}/class/{classId}")
+    public ResponseEntity<GradeCategoryDto> updateGradeCategory(@PathVariable UUID id,
+                                                              @PathVariable UUID classId,
+                                                              @Valid @RequestBody GradeCategoryDto dto) {
+        return gradeCategoryService.updateGradeCategory(id, classId, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DELETE - Delete a grade category
+    @DeleteMapping("/{id}/class/{classId}")
+    public ResponseEntity<Void> deleteGradeCategory(@PathVariable UUID id, @PathVariable UUID classId) {
+        return gradeCategoryService.deleteGradeCategory(id, classId)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

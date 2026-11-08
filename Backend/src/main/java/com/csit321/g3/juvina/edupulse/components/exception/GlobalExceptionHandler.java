@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.exception;
+package com.csit321.g3.juvina.edupulse.components.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;

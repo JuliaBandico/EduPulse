@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.dto;
+package com.csit321.g3.juvina.edupulse.components.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
