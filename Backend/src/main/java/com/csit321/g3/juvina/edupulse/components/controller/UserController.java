@@ -1,7 +1,8 @@
-package com.csit321.g3.juvina.edupulse.controller;
+package com.csit321.g3.juvina.edupulse.components.controller;
 
-import com.csit321.g3.juvina.edupulse.dto.UserDto;
-import com.csit321.g3.juvina.edupulse.service.UserService;
+import com.csit321.g3.juvina.edupulse.components.dto.UserDto;
+import com.csit321.g3.juvina.edupulse.components.service.UserService;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,5 +70,21 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllAdmins() {
         List<UserDto> admins = userService.getAllAdmins();
         return ResponseEntity.ok(admins);
+    }
+
+    // UPDATE - Update an existing user
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @Valid @RequestBody UserDto userDto) {
+        return userService.updateUser(id, userDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DELETE - Delete a user
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        return userService.deleteUser(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

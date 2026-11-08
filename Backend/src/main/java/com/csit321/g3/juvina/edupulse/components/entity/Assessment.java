@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.entity;
+package com.csit321.g3.juvina.edupulse.components.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;

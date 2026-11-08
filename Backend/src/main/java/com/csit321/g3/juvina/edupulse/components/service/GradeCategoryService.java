@@ -1,10 +1,11 @@
-package com.csit321.g3.juvina.edupulse.service;
+package com.csit321.g3.juvina.edupulse.components.service;
 
-import com.csit321.g3.juvina.edupulse.dto.GradeCategoryDto;
-import com.csit321.g3.juvina.edupulse.entity.ClassEntity;
-import com.csit321.g3.juvina.edupulse.entity.GradeCategory;
-import com.csit321.g3.juvina.edupulse.repository.ClassRepository;
-import com.csit321.g3.juvina.edupulse.repository.GradeCategoryRepository;
+import com.csit321.g3.juvina.edupulse.components.dto.GradeCategoryDto;
+import com.csit321.g3.juvina.edupulse.components.entity.ClassEntity;
+import com.csit321.g3.juvina.edupulse.components.entity.GradeCategory;
+import com.csit321.g3.juvina.edupulse.components.repository.ClassRepository;
+import com.csit321.g3.juvina.edupulse.components.repository.GradeCategoryRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +82,52 @@ public class GradeCategoryService {
     public BigDecimal getTotalWeightByClass(UUID classId) {
         BigDecimal total = gradeCategoryRepository.getTotalWeightByClassId(classId);
         return total != null ? total : BigDecimal.ZERO;
+    }
+
+    // UPDATE
+    public Optional<GradeCategoryDto> updateGradeCategory(UUID categoryId, UUID classId, GradeCategoryDto dto) {
+        return gradeCategoryRepository.findByIdAndClassEntityId(categoryId, classId).map(existingCategory -> {
+            BigDecimal currentTotal = gradeCategoryRepository.getTotalWeightByClassId(classId);
+            BigDecimal newWeight = dto.getWeightPercentage() != null ? dto.getWeightPercentage() : existingCategory.getWeightPercentage();
+
+            if (dto.getName() != null && !dto.getName().isBlank()
+                    && !dto.getName().equals(existingCategory.getName())
+                    && gradeCategoryRepository.existsByNameAndClassEntityId(dto.getName(), classId)) {
+                throw new IllegalArgumentException("Grade category with name '" + dto.getName() + "' already exists in this class");
+            }
+
+            BigDecimal projectedTotal = (currentTotal != null ? currentTotal : BigDecimal.ZERO)
+                    .subtract(existingCategory.getWeightPercentage())
+                    .add(newWeight);
+            if (projectedTotal.compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new IllegalArgumentException("Total weight percentage would exceed 100%. Current total: "
+                        + currentTotal + "% after update: " + projectedTotal + "%");
+            }
+
+            if (dto.getName() != null && !dto.getName().isBlank()) {
+                existingCategory.setName(dto.getName());
+            }
+            if (dto.getDescription() != null) {
+                existingCategory.setDescription(dto.getDescription());
+            }
+            if (dto.getWeightPercentage() != null) {
+                existingCategory.setWeightPercentage(dto.getWeightPercentage());
+            }
+            if (dto.getDisplayOrder() != null) {
+                existingCategory.setDisplayOrder(dto.getDisplayOrder());
+            }
+
+            return mapToDto(gradeCategoryRepository.save(existingCategory));
+        });
+    }
+
+    // DELETE
+    public boolean deleteGradeCategory(UUID categoryId, UUID classId) {
+        if (gradeCategoryRepository.findByIdAndClassEntityId(categoryId, classId).isEmpty()) {
+            return false;
+        }
+        gradeCategoryRepository.deleteById(categoryId);
+        return true;
     }
 
     private GradeCategoryDto mapToDto(GradeCategory category) {

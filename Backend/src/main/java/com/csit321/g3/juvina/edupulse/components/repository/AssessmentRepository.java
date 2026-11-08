@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.repository;
+package com.csit321.g3.juvina.edupulse.components.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.csit321.g3.juvina.edupulse.entity.Assessment;
-import com.csit321.g3.juvina.edupulse.entity.ClassEntity;
-import com.csit321.g3.juvina.edupulse.entity.GradeCategory;
+import com.csit321.g3.juvina.edupulse.components.entity.Assessment;
+import com.csit321.g3.juvina.edupulse.components.entity.ClassEntity;
+import com.csit321.g3.juvina.edupulse.components.entity.GradeCategory;
 
 @Repository
 public interface AssessmentRepository extends JpaRepository<Assessment, UUID> {

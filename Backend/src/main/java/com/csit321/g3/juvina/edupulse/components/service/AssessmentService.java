@@ -1,12 +1,13 @@
-package com.csit321.g3.juvina.edupulse.service;
+package com.csit321.g3.juvina.edupulse.components.service;
 
-import com.csit321.g3.juvina.edupulse.dto.AssessmentDto;
-import com.csit321.g3.juvina.edupulse.entity.Assessment;
-import com.csit321.g3.juvina.edupulse.entity.ClassEntity;
-import com.csit321.g3.juvina.edupulse.entity.GradeCategory;
-import com.csit321.g3.juvina.edupulse.repository.AssessmentRepository;
-import com.csit321.g3.juvina.edupulse.repository.ClassRepository;
-import com.csit321.g3.juvina.edupulse.repository.GradeCategoryRepository;
+import com.csit321.g3.juvina.edupulse.components.dto.AssessmentDto;
+import com.csit321.g3.juvina.edupulse.components.entity.Assessment;
+import com.csit321.g3.juvina.edupulse.components.entity.ClassEntity;
+import com.csit321.g3.juvina.edupulse.components.entity.GradeCategory;
+import com.csit321.g3.juvina.edupulse.components.repository.AssessmentRepository;
+import com.csit321.g3.juvina.edupulse.components.repository.ClassRepository;
+import com.csit321.g3.juvina.edupulse.components.repository.GradeCategoryRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,63 @@ public class AssessmentService {
     @Transactional(readOnly = true)
     public Page<AssessmentDto> getAssessmentsByClassPaginated(UUID classId, Pageable pageable) {
         return assessmentRepository.findByClassEntityId(classId, pageable).map(this::mapToDto);
+    }
+
+    // UPDATE
+    public Optional<AssessmentDto> updateAssessment(UUID assessmentId, AssessmentDto dto) {
+        return assessmentRepository.findById(assessmentId).map(existingAssessment -> {
+            ClassEntity classEntity = classRepository.findById(dto.getClassId())
+                    .orElseThrow(() -> new IllegalArgumentException("Class not found with ID: " + dto.getClassId()));
+
+            if (!classEntity.getId().equals(existingAssessment.getClassEntity().getId())) {
+                throw new IllegalArgumentException("Assessment does not belong to class: " + dto.getClassId());
+            }
+
+            GradeCategory gradeCategory = gradeCategoryRepository.findByIdAndClassEntityId(dto.getGradeCategoryId(), dto.getClassId())
+                    .orElseThrow(() -> new IllegalArgumentException("Grade category not found or doesn't belong to this class"));
+
+            if (dto.getTitle() != null && !dto.getTitle().isBlank()
+                    && !dto.getTitle().equals(existingAssessment.getTitle())
+                    && assessmentRepository.existsByTitleAndClassEntityId(dto.getTitle(), dto.getClassId())) {
+                throw new IllegalArgumentException("Assessment with title '" + dto.getTitle() + "' already exists in this class");
+            }
+
+            if (dto.getTitle() != null && !dto.getTitle().isBlank()) {
+                existingAssessment.setTitle(dto.getTitle());
+            }
+            if (dto.getDescription() != null) {
+                existingAssessment.setDescription(dto.getDescription());
+            }
+            if (dto.getType() != null) {
+                existingAssessment.setType(Assessment.AssessmentType.valueOf(dto.getType().name()));
+            }
+            if (dto.getMaxScore() != null) {
+                existingAssessment.setMaxScore(dto.getMaxScore());
+            }
+            if (dto.getWeightWithinCategory() != null) {
+                existingAssessment.setWeightWithinCategory(dto.getWeightWithinCategory());
+            }
+            if (dto.getDueDate() != null) {
+                existingAssessment.setDueDate(dto.getDueDate());
+            }
+            if (dto.getIsPublished() != null) {
+                existingAssessment.setIsPublished(dto.getIsPublished());
+            }
+
+            existingAssessment.setClassEntity(classEntity);
+            existingAssessment.setGradeCategory(gradeCategory);
+
+            return mapToDto(assessmentRepository.save(existingAssessment));
+        });
+    }
+
+    // DELETE
+    public boolean deleteAssessment(UUID id) {
+        if (!assessmentRepository.existsById(id)) {
+            return false;
+        }
+        assessmentRepository.deleteById(id);
+        return true;
     }
 
     private AssessmentDto mapToDto(Assessment assessment) {

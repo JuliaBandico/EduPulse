@@ -1,10 +1,11 @@
-package com.csit321.g3.juvina.edupulse.service;
+package com.csit321.g3.juvina.edupulse.components.service;
 
-import com.csit321.g3.juvina.edupulse.dto.ClassDto;
-import com.csit321.g3.juvina.edupulse.entity.ClassEntity;
-import com.csit321.g3.juvina.edupulse.entity.User;
-import com.csit321.g3.juvina.edupulse.repository.ClassRepository;
-import com.csit321.g3.juvina.edupulse.repository.UserRepository;
+import com.csit321.g3.juvina.edupulse.components.dto.ClassDto;
+import com.csit321.g3.juvina.edupulse.components.entity.ClassEntity;
+import com.csit321.g3.juvina.edupulse.components.entity.User;
+import com.csit321.g3.juvina.edupulse.components.repository.ClassRepository;
+import com.csit321.g3.juvina.edupulse.components.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,6 +81,58 @@ public class ClassService {
     @Transactional(readOnly = true)
     public Optional<ClassDto> getClassByIdAndTeacher(UUID classId, UUID teacherId) {
         return classRepository.findByIdAndTeacherId(classId, teacherId).map(this::mapToDto);
+    }
+
+    // UPDATE
+    public Optional<ClassDto> updateClass(UUID id, ClassDto classDto) {
+        return classRepository.findById(id).map(existingClass -> {
+            UUID teacherIdForValidation = classDto.getTeacherId() != null ? classDto.getTeacherId() : existingClass.getTeacher().getId();
+            User teacher = userRepository.findById(teacherIdForValidation)
+                    .orElseThrow(() -> new IllegalArgumentException("Teacher not found with ID: " + teacherIdForValidation));
+
+            if (!teacher.getIsTeacher()) {
+                throw new IllegalArgumentException("User is not a teacher: " + teacherIdForValidation);
+            }
+
+            if (classDto.getName() != null && !classDto.getName().isBlank()
+                    && !classDto.getName().equals(existingClass.getName())
+                    && classRepository.existsByNameAndTeacherId(classDto.getName(), teacherIdForValidation)) {
+                throw new IllegalArgumentException("Class with name '" + classDto.getName() + "' already exists for this teacher");
+            }
+
+            if (classDto.getName() != null && !classDto.getName().isBlank()) {
+                existingClass.setName(classDto.getName());
+            }
+            if (classDto.getDescription() != null) {
+                existingClass.setDescription(classDto.getDescription());
+            }
+            if (classDto.getSubject() != null) {
+                existingClass.setSubject(classDto.getSubject());
+            }
+            if (classDto.getSection() != null) {
+                existingClass.setSection(classDto.getSection());
+            }
+            if (classDto.getSchoolYear() != null) {
+                existingClass.setSchoolYear(classDto.getSchoolYear());
+            }
+            if (classDto.getSemester() != null) {
+                existingClass.setSemester(classDto.getSemester());
+            }
+            if (classDto.getTeacherId() != null) {
+                existingClass.setTeacher(teacher);
+            }
+
+            return mapToDto(classRepository.save(existingClass));
+        });
+    }
+
+    // DELETE
+    public boolean deleteClass(UUID id) {
+        if (!classRepository.existsById(id)) {
+            return false;
+        }
+        classRepository.deleteById(id);
+        return true;
     }
 
     private ClassDto mapToDto(ClassEntity classEntity) {

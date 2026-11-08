@@ -1,4 +1,4 @@
-package com.csit321.g3.juvina.edupulse.exception;
+package com.csit321.g3.juvina.edupulse.components.exception;
 
 import java.time.LocalDateTime;
 import java.util.Map;

@@ -1,8 +1,9 @@
-package com.csit321.g3.juvina.edupulse.service;
+package com.csit321.g3.juvina.edupulse.components.service;
 
-import com.csit321.g3.juvina.edupulse.dto.UserDto;
-import com.csit321.g3.juvina.edupulse.entity.User;
-import com.csit321.g3.juvina.edupulse.repository.UserRepository;
+import com.csit321.g3.juvina.edupulse.components.dto.UserDto;
+import com.csit321.g3.juvina.edupulse.components.entity.User;
+import com.csit321.g3.juvina.edupulse.components.repository.UserRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +88,50 @@ public class UserService {
         return userRepository.findAllAdmins().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    // UPDATE
+    public Optional<UserDto> updateUser(UUID id, UserDto userDto) {
+        return userRepository.findById(id).map(existingUser -> {
+            if (userDto.getEmail() != null && !userDto.getEmail().isBlank()
+                    && !userDto.getEmail().equalsIgnoreCase(existingUser.getEmail())
+                    && userRepository.existsByEmail(userDto.getEmail())) {
+                throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+            }
+
+            if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+                existingUser.setEmail(userDto.getEmail());
+            }
+            if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
+                existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            }
+            if (userDto.getFirstName() != null && !userDto.getFirstName().isBlank()) {
+                existingUser.setFirstName(userDto.getFirstName());
+            }
+            if (userDto.getLastName() != null && !userDto.getLastName().isBlank()) {
+                existingUser.setLastName(userDto.getLastName());
+            }
+            if (userDto.getIsTeacher() != null) {
+                existingUser.setIsTeacher(userDto.getIsTeacher());
+            }
+            if (userDto.getIsStudent() != null) {
+                existingUser.setIsStudent(userDto.getIsStudent());
+            }
+            if (userDto.getIsAdmin() != null) {
+                existingUser.setIsAdmin(userDto.getIsAdmin());
+            }
+
+            return mapToDto(userRepository.save(existingUser));
+        });
+    }
+
+    // DELETE
+    public boolean deleteUser(UUID id) {
+        if (!userRepository.existsById(id)) {
+            return false;
+        }
+        userRepository.deleteById(id);
+        return true;
     }
 
     private UserDto mapToDto(User user) {
